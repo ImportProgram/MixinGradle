@@ -600,7 +600,11 @@ public class MixinExtension {
                                 this.addMappings(reobfTask, type, srgFiles[type])
                                 mapped = true
                             } else {
-                                print "Something doesn't exist, nor matches the file, nor is mapped...."
+                                println "Something doesn't exist, nor matches the file, nor is mapped...."
+                                println "Type: ${type.matches(arg)}"
+                                println "Mapped: ${!mapped}"
+                                println "File Exists: ${srgFiles[type].exists()} | ${type}"
+
                             }
                         }
                     }
