@@ -539,7 +539,12 @@ public class MixinExtension {
         compileTask.ext.refMapFile = refMapFile
         set.ext.refMapFile = refMapFile
         compileTask.ext.refMap = set.ext.refMap.toString()
-        
+
+        println "Location for ${compileTask.name}-refmap: ${compileTask.temporaryDir}/${compileTask.name}-refmap.json"
+        println "Location for mcp-srg: ${compileTask.temporaryDir}/mcp-srg.srg"
+        println "Location for mcp-notch: ${compileTask.temporaryDir}/mcp-notch.srg"
+
+
         // Closure to prepare AP environment before compile task runs
         compileTask.doFirst {
             println "Compile task for refMap executed..."
@@ -551,10 +556,10 @@ public class MixinExtension {
                 refMaps[compileTask.ext.refMap] = set.name
             }
             
-            refMapFile.delete()
-            srgFiles.each {
+            //refMapFile.delete()
+            /*srgFiles.each {
                 it.value.delete()
-            }
+            }*/
             this.applyCompilerArgs(compileTask)
         }
 
