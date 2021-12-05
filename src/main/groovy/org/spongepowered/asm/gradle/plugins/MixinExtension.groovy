@@ -531,7 +531,11 @@ public class MixinExtension {
             (ReobfMappingType.SEARGE): project.file("${compileTask.temporaryDir}/mcp-srg.srg"),
             (ReobfMappingType.NOTCH): project.file("${compileTask.temporaryDir}/mcp-notch.srg")
         ]
-        
+
+        //Do we have the file made?
+        project.logger.info "SEARGE FILE: ", srgFiles[SEARGE]
+        project.logger.info "NOTCH FILE: ", srgFiles[NOTCH]
+
         // Add our vars as extension properties to the sourceSet and compile
         // tasks, this will allow them to be used in the build script if needed
         compileTask.ext.outSrgFile = srgFiles[SEARGE]
@@ -542,10 +546,12 @@ public class MixinExtension {
         
         // Closure to prepare AP environment before compile task runs
         compileTask.doFirst {
+            project.logger.info "Compile task for refMap executed..."
             if (!this.disableRefMapWarning && refMaps[compileTask.ext.refMap]) {
                 project.logger.warn "Potential refmap conflict. Duplicate refmap name {} specified for sourceSet {}, already defined for sourceSet {}",
                     compileTask.ext.refMap, set.name, refMaps[compileTask.ext.refMap]
             } else {
+                project.logger.info "Using default refMap with name of: {}", set.name
                 refMaps[compileTask.ext.refMap] = set.name
             }
             
@@ -565,11 +571,13 @@ public class MixinExtension {
         // Closure to rename generated refMap to artefact-specific refmap when
         // compile task is completed
         compileTask.doLast {
+            project.logger.info "Renaming generated refMap..."
             // Delete the old one
             artefactSpecificRefMap.delete()
 
             // Copy the new one if it was successfully generated
             if (compileTask.ext.refMapFile.exists()) {
+                project.logger.info "Coping said generated refMap"
                 Files.copy(refMapFile, artefactSpecificRefMap) 
             }
         }
@@ -578,11 +586,13 @@ public class MixinExtension {
         // is completed
         this.reobfTasks.each { reobfTask ->
             reobfTask.taskWrapper.task.doFirst {
+                project.logger.info "refObjTask"
                 try {
                     def mapped = false
                     [reobfTask.taskWrapper.mappingType, this.defaultObfuscationEnv.toString()].each { arg ->
                         ReobfMappingType.each { type ->
                             if (type.matches(arg) && !mapped && srgFiles[type].exists()) {
+                                project.logger.info "Add mappings: {}, {}", reobfTask.getName(), type
                                 this.addMappings(reobfTask, type, srgFiles[type])
                                 mapped = true
                             }
@@ -591,9 +601,11 @@ public class MixinExtension {
     
                     // No mapping set was matched, so add the searge mappings
                     if (!mapped && srgFiles[SEARGE].exists()) {
+                        project.logger.info "Add SEARGE mappings instead: {}", reobfTask.getName()
                         this.addMappings(reobfTask, SEARGE, srgFiles[SEARGE])
                     }
                 } catch (MissingPropertyException ex) {
+                    project.logger.info "Error!???!"
                     if (ex.property == "mappingType") {
                         throw new InvalidUserDataException("Could not determine mapping type for obf task, ensure ForgeGradle up to date.")
                     } else {
@@ -606,6 +618,7 @@ public class MixinExtension {
 
         // Add the refmap to all reobf'd jars
         this.reobfTasks.each { reobfTask ->
+            project.logger.info "Add refmap to jar..."
             reobfTask.jar.getRefMaps().from(artefactSpecificRefMap)
             reobfTask.jar.from(artefactSpecificRefMap)
         }
