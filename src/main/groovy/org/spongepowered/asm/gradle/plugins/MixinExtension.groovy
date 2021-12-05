@@ -524,12 +524,12 @@ public class MixinExtension {
         def refMaps = this.refMaps
         
         // Refmap file
-        def refMapFile = project.file("${compileTask.temporaryDir}/${compileTask.name}-refmap.json")
+        def refMapFile = project.file("${compileTask.temporaryDir}\\${compileTask.name}-refmap.json")
         
         // Srg files
         def srgFiles = [
-            (ReobfMappingType.SEARGE): project.file("${compileTask.temporaryDir}/mcp-srg.srg"),
-            (ReobfMappingType.NOTCH): project.file("${compileTask.temporaryDir}/mcp-notch.srg")
+            (ReobfMappingType.SEARGE): project.file("${compileTask.temporaryDir}\\mcp-srg.srg"),
+            (ReobfMappingType.NOTCH): project.file("${compileTask.temporaryDir}\\mcp-notch.srg")
         ]
 
         // Add our vars as extension properties to the sourceSet and compile
@@ -587,16 +587,20 @@ public class MixinExtension {
         // is completed
         this.reobfTasks.each { reobfTask ->
             reobfTask.taskWrapper.task.doFirst {
-                println "refObjTask"
+                println "reobfTask doFirst for:  ${reobfTask.name}"
+                println "Default Obfuscation Enviroment: ${this.defaultObfuscationEnv.toString()}"
                 try {
                     def mapped = false
                     [reobfTask.taskWrapper.mappingType, this.defaultObfuscationEnv.toString()].each { arg ->
                         println "reobfTask.taskWrapper.mappingType"
                         ReobfMappingType.each { type ->
+                            println "Mapping Type: ${type}"
                             if (type.matches(arg) && !mapped && srgFiles[type].exists()) {
-
+                                println "Add a mapping"
                                 this.addMappings(reobfTask, type, srgFiles[type])
                                 mapped = true
+                            } else {
+                                print "Something doesn't exist, nor matches the file, nor is mapped...."
                             }
                         }
                     }
