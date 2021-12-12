@@ -685,7 +685,8 @@ public class MixinExtension {
 
         compileTask.options.annotationProcessorPath = project.files([(project.file(".").absolutePath + '/' + fixedRelPathToAP)])
         compileTask.options.compilerArgs += [
-            "-processor=org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets",
+            "-processor",
+            "org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets",
             "-AreobfSrgFile=${this.getReobfSrgFile().canonicalPath}",
             "-AreobfNotchSrgFile=${this.getReobfNotchSrgFile().canonicalPath}",
             "-AoutSrgFile=${compileTask.outSrgFile.canonicalPath}",
