@@ -664,7 +664,7 @@ public class MixinExtension {
      */
     @PackageScope void applyCompilerArgs(JavaCompile compileTask) {
 
-        println "Path: " + projectDir.absolutePath
+        println "Path: " + project.file(".")
         def fixedRelPathToAP = compileTask.ext.annotationProcessor
         if(fixedRelPathToAP.startsWith('./') || fixedRelPathToAP.startsWith('.\\')){
             fixedRelPathToAP = fixedRelPathToAP.substring(2)
@@ -682,7 +682,7 @@ public class MixinExtension {
 
 
         compileTask.options.compilerArgs += [
-            "-processorpath", projectDir.absolutePath + '/' + fixedRelPathToAP,
+            "-processorpath", project.file(".").absolutePath + '/' + fixedRelPathToAP,
             "-processor", "org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets",
             "-AreobfSrgFile=${this.getReobfSrgFile().canonicalPath}",
             "-AreobfNotchSrgFile=${this.getReobfNotchSrgFile().canonicalPath}",
