@@ -674,8 +674,8 @@ public class MixinExtension {
 
 
         println "Compile task for AP?"
-        println "-processorpath", project.file(".").absolutePath + '/' + fixedRelPathToAP
-        println "-processor", "org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets"
+        println "-processorpath ${project.file(".").absolutePath + '/' + fixedRelPathToAP}"
+        println "-processor=org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets"
         println "-AreobfSrgFile=${this.getReobfSrgFile().canonicalPath}"
         println "-AreobfNotchSrgFile=${this.getReobfNotchSrgFile().canonicalPath}"
         println "-AoutSrgFile=${compileTask.outSrgFile.canonicalPath}"
@@ -684,7 +684,7 @@ public class MixinExtension {
 
         compileTask.options.annotationProcessorPath = project.file(".").absolutePath + '/' + fixedRelPathToAP
         compileTask.options.compilerArgs += [
-            "-processor", "org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets",
+            "-processor=org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets",
             "-AreobfSrgFile=${this.getReobfSrgFile().canonicalPath}",
             "-AreobfNotchSrgFile=${this.getReobfNotchSrgFile().canonicalPath}",
             "-AoutSrgFile=${compileTask.outSrgFile.canonicalPath}",
