@@ -536,6 +536,8 @@ public class MixinExtension {
         // tasks, this will allow them to be used in the build script if needed
         compileTask.ext.outSrgFile = srgFiles[SEARGE]
         compileTask.ext.outNotchFile = srgFiles[NOTCH]
+
+        compileTask.ext.annotationProcessor = "mixin-0.8-SNAPSHOT.jar"
         compileTask.ext.refMapFile = refMapFile
         set.ext.refMapFile = refMapFile
         compileTask.ext.refMap = set.ext.refMap.toString()
@@ -662,6 +664,15 @@ public class MixinExtension {
      */
     @PackageScope void applyCompilerArgs(JavaCompile compileTask) {
 
+        println "Path: " + projectDir.absolutePath
+        def fixedRelPathToAP = compileTask.ext.annotationProcessor
+        if(fixedRelPathToAP.startsWith('./') || fixedRelPathToAP.startsWith('.\\')){
+            fixedRelPathToAP = fixedRelPathToAP.substring(2)
+        } else if(fixedRelPathToAP.startsWith('/') || fixedRelPathToAP.startsWith('\\')){
+            fixedRelPathToAP = fixedRelPathToAP.substring(1)
+        }
+
+
         println "Compile task for AP?"
         println "-AreobfSrgFile=${this.getReobfSrgFile().canonicalPath}"
         println "-AreobfNotchSrgFile=${this.getReobfNotchSrgFile().canonicalPath}"
@@ -670,8 +681,9 @@ public class MixinExtension {
         println "-AoutRefMapFile=${compileTask.refMapFile.canonicalPath}"
 
 
-
         compileTask.options.compilerArgs += [
+            "-processorpath", projectDir.absolutePath + '/' + fixedRelPathToAP,
+            "-processor", "org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets",
             "-AreobfSrgFile=${this.getReobfSrgFile().canonicalPath}",
             "-AreobfNotchSrgFile=${this.getReobfNotchSrgFile().canonicalPath}",
             "-AoutSrgFile=${compileTask.outSrgFile.canonicalPath}",
