@@ -661,6 +661,16 @@ public class MixinExtension {
      * @param compileTask Compile task to modify
      */
     @PackageScope void applyCompilerArgs(JavaCompile compileTask) {
+
+        println "Compile task for AP?"
+        println "-AreobfSrgFile=${this.getReobfSrgFile().canonicalPath}"
+        println "-AreobfNotchSrgFile=${this.getReobfNotchSrgFile().canonicalPath}"
+        println "-AoutSrgFile=${compileTask.outSrgFile.canonicalPath}"
+        println "-AoutNotchSrgFile=${compileTask.outNotchFile.canonicalPath}"
+        println "-AoutRefMapFile=${compileTask.refMapFile.canonicalPath}"
+
+
+
         compileTask.options.compilerArgs += [
             "-AreobfSrgFile=${this.getReobfSrgFile().canonicalPath}",
             "-AreobfNotchSrgFile=${this.getReobfNotchSrgFile().canonicalPath}",
@@ -704,7 +714,7 @@ public class MixinExtension {
         File importsFile = this.generateImportsFile(compileTask)
         if (importsFile != null) {
             compileTask.options.compilerArgs += "-AdependencyTargetsFile=${importsFile.canonicalPath}"
-        }    
+        }
     }
 
     /**
