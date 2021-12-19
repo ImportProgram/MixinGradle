@@ -542,26 +542,25 @@ public class MixinExtension {
         set.ext.refMapFile = refMapFile
         compileTask.ext.refMap = set.ext.refMap.toString()
 
-        println "Location for ${compileTask.name}-refmap: ${compileTask.temporaryDir}/${compileTask.name}-refmap.json"
-        println "Location for mcp-srg: ${compileTask.temporaryDir}/mcp-srg.srg"
-        println "Location for mcp-notch: ${compileTask.temporaryDir}/mcp-notch.srg"
+        project.logger.info "Location for ${compileTask.name}-refmap: ${compileTask.temporaryDir}/${compileTask.name}-refmap.json"
+        project.logger.info "Location for mcp-srg: ${compileTask.temporaryDir}/mcp-srg.srg"
+        project.logger.info "Location for mcp-notch: ${compileTask.temporaryDir}/mcp-notch.srg"
 
 
         // Closure to prepare AP environment before compile task runs
         compileTask.doFirst {
-            println "Compile task for refMap executed..."
             if (!this.disableRefMapWarning && refMaps[compileTask.ext.refMap]) {
                 project.logger.warn "Potential refmap conflict. Duplicate refmap name {} specified for sourceSet {}, already defined for sourceSet {}",
                     compileTask.ext.refMap, set.name, refMaps[compileTask.ext.refMap]
             } else {
-                println "Using default refMap with name of: ${set.name}"
+                project.logger.info "Using default refmap with name of: ${set.name}"
                 refMaps[compileTask.ext.refMap] = set.name
             }
             
-            //refMapFile.delete()
-            /*srgFiles.each {
+            refMapFile.delete()
+            srgFiles.each {
                 it.value.delete()
-            }*/
+            }
             this.applyCompilerArgs(compileTask)
         }
 
@@ -574,13 +573,11 @@ public class MixinExtension {
         // Closure to rename generated refMap to artefact-specific refmap when
         // compile task is completed
         compileTask.doLast {
-            println "Renaming generated refMap..."
             // Delete the old one
             artefactSpecificRefMap.delete()
 
             // Copy the new one if it was successfully generated
             if (compileTask.ext.refMapFile.exists()) {
-                println "Coping said generated refMap"
                 Files.copy(refMapFile, artefactSpecificRefMap) 
             }
         }
@@ -589,35 +586,21 @@ public class MixinExtension {
         // is completed
         this.reobfTasks.each { reobfTask ->
             reobfTask.taskWrapper.task.doFirst {
-                println "reobfTask doFirst for:  ${reobfTask.name}"
-                println "Default Obfuscation Enviroment: ${this.defaultObfuscationEnv.toString()}"
                 try {
                     def mapped = false
                     [reobfTask.taskWrapper.mappingType, this.defaultObfuscationEnv.toString()].each { arg ->
-                        println "reobfTask.taskWrapper.mappingType"
                         ReobfMappingType.each { type ->
-                            println "Mapping Type: ${type}"
                             if (type.matches(arg) && !mapped && srgFiles[type].exists()) {
-                                println "Add a mapping"
                                 this.addMappings(reobfTask, type, srgFiles[type])
                                 mapped = true
-                            } else {
-                                println "Something doesn't exist, nor matches the file, nor is mapped...."
-                                println "Type: ${type.matches(arg)}"
-                                println "Mapped: ${!mapped}"
-                                println "File Exists: ${srgFiles[type].exists()} | ${type}"
-
                             }
                         }
                     }
-    
                     // No mapping set was matched, so add the searge mappings
                     if (!mapped && srgFiles[SEARGE].exists()) {
-                        println "Add SEARGE mappings instead: {}", reobfTask.getName()
                         this.addMappings(reobfTask, SEARGE, srgFiles[SEARGE])
                     }
                 } catch (MissingPropertyException ex) {
-                    println "Error!???!"
                     if (ex.property == "mappingType") {
                         throw new InvalidUserDataException("Could not determine mapping type for obf task, ensure ForgeGradle up to date.")
                     } else {
@@ -630,7 +613,6 @@ public class MixinExtension {
 
         // Add the refmap to all reobf'd jars
         this.reobfTasks.each { reobfTask ->
-            println "Add refmap to jar..."
             reobfTask.jar.getRefMaps().from(artefactSpecificRefMap)
             reobfTask.jar.from(artefactSpecificRefMap)
         }
@@ -664,7 +646,6 @@ public class MixinExtension {
      */
     @PackageScope void applyCompilerArgs(JavaCompile compileTask) {
 
-        println "Path: " + project.file(".")
         def fixedRelPathToAP = compileTask.ext.annotationProcessor
         if(fixedRelPathToAP.startsWith('./') || fixedRelPathToAP.startsWith('.\\')){
             fixedRelPathToAP = fixedRelPathToAP.substring(2)
@@ -673,7 +654,7 @@ public class MixinExtension {
         }
 
 
-        println "Compile task for AP?"
+        println "Annotation Processor..."
         println "-processorpath=${project.file(".").absolutePath + '/' + fixedRelPathToAP}"
         println "-processor=org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets"
         println "-AreobfSrgFile=${this.getReobfSrgFile().canonicalPath}"
